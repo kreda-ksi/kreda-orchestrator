@@ -95,7 +95,7 @@ def process(
         aligned_segments = [
             AlignedSegment(
                 timestamp_ms=int(row["t_ms"]),
-                event_type=str(row["event_type"]),
+                event_type=str(row["changed_or_what"]),
                 filename=str(row["filename"]),
                 transcript_chunk="",
             )
