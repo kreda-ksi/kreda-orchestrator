@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kreda"
+version = "0.1.0"
+dependencies = [
+    "python-dotenv",
+    "typer",
+    "faster-whisper",
+    "pandas"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "pyright"
+]
