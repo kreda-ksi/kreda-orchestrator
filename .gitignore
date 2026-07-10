@@ -1,2 +1,5 @@
 data
 .env
+src/kreda/__pycache__
+src/kreda/models/__pycache__
+src/kreda/pipeline/__pycache__
