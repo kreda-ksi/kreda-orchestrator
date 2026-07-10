@@ -27,6 +27,12 @@ def process(
         "-gf",
         help="Override motion grid file path (relative to run path)",
     ),
+    audio_file: Path = typer.Option(
+        "audio.wav",
+        "--audio-file",
+        "-af",
+        help="Override audio file to transcript (relative to run path)",
+    ),
     no_audio: bool = typer.Option(
         False,
         "--no-audio",
@@ -84,17 +90,16 @@ def process(
 
     if no_audio:
         from kreda.pipeline.aligner import get_keyframes, AlignedSegment
-        from typing import cast
 
         keyframes = get_keyframes(run_path / log_file)
         aligned_segments = [
             AlignedSegment(
-                timestamp_ms=int(row.t_ms),
-                event_type=cast(str, row.event_type),
-                filename=cast(str, row.filename),
+                timestamp_ms=int(row["t_ms"]),
+                event_type=str(row["event_type"]),
+                filename=str(row["filename"]),
                 transcript_chunk="",
             )
-            for row in keyframes.itertuples()
+            for row in keyframes.to_dict("records")
         ]
     else:
         from kreda.pipeline.aligner import run as aligner_run
@@ -108,7 +113,9 @@ def process(
             lag_padding_ms=whisper_lag_padding_ms,
         )
 
-        aligned_segments = aligner_run(run_path, log_file, whisper_cfg)
+        aligned_segments = aligner_run(
+            run_path / audio_file, run_path / log_file, whisper_cfg
+        )
     for line in aligned_segments:
         typer.echo(line.transcript_chunk)
 

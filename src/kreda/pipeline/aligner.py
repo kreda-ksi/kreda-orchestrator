@@ -72,8 +72,8 @@ def sync_timestamps(
     aligned_data = []
     last_time = 0
 
-    for row in keyframes.itertuples():
-        curr_time = int(row.t_ms)
+    for row in keyframes.to_dict("records"):
+        curr_time = int(row["t_ms"])
         curr_cutoff_ms = curr_time + cfg.lag_padding_ms
 
         chunk_text = []
@@ -84,8 +84,8 @@ def sync_timestamps(
         aligned_data.append(
             AlignedSegment(
                 timestamp_ms=curr_time,
-                event_type=cast(str, row.changed_or_what),
-                filename=cast(str, row.filename),
+                event_type=str(row["changed_or_what"]),
+                filename=str(row["filename"]),
                 transcript_chunk=" ".join(chunk_text),
             )
         )
@@ -95,9 +95,9 @@ def sync_timestamps(
     return aligned_data
 
 
-def run(run_path: Path, csv_path: Path, cfg: WhisperConfig) -> List[AlignedSegment]:
-    keyframes = get_keyframes(run_path / csv_path)
-    audio_segments = transcribe_audio(run_path / "audio.wav", cfg)
+def run(audio_path: Path, csv_path: Path, cfg: WhisperConfig) -> List[AlignedSegment]:
+    keyframes = get_keyframes(csv_path)
+    audio_segments = transcribe_audio(audio_path, cfg)
     aligned_segments = sync_timestamps(keyframes, audio_segments, cfg)
 
     return aligned_segments
