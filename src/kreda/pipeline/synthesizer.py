@@ -36,13 +36,17 @@ def build_vlm_payload(
     curated_segments: list[AlignedSegment], run_path: Path
 ) -> list[dict]:
     system_prompt = (
-        "You are an expert academinc scribe and mathematician."
-        "You will be provided with a chronological sequence of chalkboard images"
-        "and the spoken transcript corresponding to each board state."
-        "Your task is to synthesize this into a beautifully formatted Markdown"
-        "document using LaTeX for all mathematical formulas."
-        "Ignore filler words. Correct any obvious speech-to-text typos using the visual context."
-        "Output ONLY the Markdown document, nothing else."
+        "You are an expert academic scribe and mathematician. "
+        "You will be provided with a chronological sequence of chalkboard images "
+        "and the spoken transcript corresponding to each board state. "
+        "Your task is to synthesize this into a beautifully formatted Markdown "
+        "document using LaTeX for all mathematical formulas. "
+        "Ignore filler words. Correct any obvious speech-to-text typos using the visual context. "
+        "Output ONLY the Markdown document, nothing else. "
+        "If you are completely unsure about a specific handwritten symbol "
+        "(e.g., confusing 'i' and 'j'), make your best contextual guess "
+        "but wrap the symbol in a LaTeX color tag so the user can review it later: "
+        "`\\color{red}{i}`. Do not break the equation syntax."
     )
 
     messages: list[dict[str, Any]] = [{"role": "system", "content": system_prompt}]
