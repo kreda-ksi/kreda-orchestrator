@@ -4,11 +4,20 @@ from pathlib import Path
 from typing import Any
 from kreda.models.events import AlignedSegment
 from kreda.models.config import SynthesizerConfig
+import pycountry
 
 
 def encode_img_to_b64(image_path: Path) -> str:
     with open(image_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
+
+
+def get_language_name(language_code: str) -> str:
+    if len(language_code) == 2:
+        language = pycountry.languages.get(alpha_2=language_code.lower())
+        if language:
+            return language.name
+    return language_code
 
 
 def debug_print_payload(payload: list[dict]):
@@ -36,13 +45,17 @@ def debug_print_payload(payload: list[dict]):
 def build_vlm_payload(
     curated_segments: list[AlignedSegment], run_path: Path, cfg: SynthesizerConfig
 ) -> list[dict]:
+
+    full_input_language = get_language_name(cfg.input_language)
+    full_output_language = get_language_name(cfg.output_language)
+
     system_prompt = (
         f"You are an expert academic scribe specializing in {cfg.course_domain}. "
         "You will be provided with a chronological sequence of chalkboard images "
         "and the spoken transcript corresponding to each board state. "
-        f"The transcript is in {cfg.input_language}."
+        f"The transcript is in {full_input_language}."
         "Your task is to synthesize this into a beautifully formatted, comprehensive Markdown "
-        f"written in {cfg.output_language}. "
+        f"written in {full_output_language}. "
         "If the input language differs from the output language, seamlessly translate the concepts.\n\n"
         "FORMATTING RULES:\n"
         "- Use standard Markdown for structure (header, bullet points).\n"

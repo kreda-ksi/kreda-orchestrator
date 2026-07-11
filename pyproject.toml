@@ -12,6 +12,7 @@ dependencies = [
     "pandas",
     "opencv-python-headless",
     "numpy",
+    "pycountry"
 ]
 
 [project.optional-dependencies]
