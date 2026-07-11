@@ -22,3 +22,11 @@ class SynthesizerConfig:
     input_language: str
     output_language: str
     course_domain: str
+
+
+@dataclass(frozen=True)
+class GeneratorConfig:
+    model: str
+    api_key: str | None
+    base_url: str | None
+    chunk_size: int
