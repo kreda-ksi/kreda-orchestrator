@@ -9,7 +9,9 @@ dependencies = [
     "python-dotenv",
     "typer",
     "faster-whisper",
-    "pandas"
+    "pandas",
+    "opencv-python-headless",
+    "numpy",
 ]
 
 [project.optional-dependencies]

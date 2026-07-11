@@ -116,7 +116,12 @@ def process(
         aligned_segments = aligner_run(
             run_path / audio_file, run_path / log_file, whisper_cfg
         )
-    for line in aligned_segments:
+
+    from kreda.pipeline.assembler import run as assembler_run
+
+    curated_segments = assembler_run(aligned_segments, run_path, grid_file)
+
+    for line in curated_segments:
         typer.echo(line.transcript_chunk)
 
     typer.secho("Process finished successfully.")
