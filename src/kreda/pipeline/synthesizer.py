@@ -66,12 +66,11 @@ def build_vlm_payload(
         "- Use LaTeX for all mathematical formulas and symbols. Use `$` for inline math and `$$` for block equations.\n\n"
         "- Do NOT wrap your final response in ```markdown fences.\n"
         "- Use standard Markdown code blocks (```) for programming code, algorithms.\n"
-        "- NEVER generate placeholder image links (e.g. `![alt](url)`). "
-        "Instead, if the professor draws a diagram, graph, or illustration, "
-        "capture its semantic meaning in a structured blockquote like this:\n"
-        "  > **Diagram:** [Provide a highly detailed textual description of the diagram. "
-        "E.g., 'A directed graph with 3 nodes where node A points to B...']\n"
-        "- If the diagram is very simple, you may use ASCII art inside a code block.\n"
+        "- NEVER generate placeholder image links (e.g. `![alt](url)`).\n"
+        "- When the professor draws a diagram, graph or visual grid, describe it using custom XML tags for downstream processing.\n"
+        '- Use `<diagram type="graph|geometry|flowchart"> [detailed spatial and semantic description] </diagram>`.\n'
+        '- Use `<grid rows="X" cols="Y"> [describe the contents of the matrix/grid row by row] </grid>`.\n'
+        "- Ensure the text inside these tags provides enough geometric and mathematical detail to perfectly reconstruct the visual in Typst later.\n"
         "- Avoid repetition: If a formula remains on the board across multiple images but was already covered, do not rewrite it.\n"
         "- Ignore spoken filler words or tangents. Correct obvious speech-to-text typos using visual context.\n"
         "- If you are completely unsure about a specific handwritten symbol, make your best contextual guess "
