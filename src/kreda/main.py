@@ -145,6 +145,13 @@ def process(
         aligned_segments, run_path, grid_file, assembler_cfg
     )
 
+    # step 3 (synthesizer)
+
+    from kreda.pipeline.synthesizer import debug_print_payload, build_vlm_payload
+
+    payload = build_vlm_payload(curated_segments, run_path)
+    debug_print_payload(payload)
+
     # finish logic
 
     for line in curated_segments:
