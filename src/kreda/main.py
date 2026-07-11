@@ -170,10 +170,10 @@ def process(
 
     payload = build_vlm_payload(curated_segments, run_path, synthesizer_cfg)
 
-    # finish logic
+    if debug:
+        debug_print_payload(payload)
 
-    for line in curated_segments:
-        typer.echo(line.transcript_chunk)
+    # finish logic
 
     typer.secho("Process finished successfully.")
 
