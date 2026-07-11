@@ -42,7 +42,7 @@ def transcribe_audio(audio_path: Path, cfg: WhisperConfig) -> list[dict]:
 
     print(f"Transcribing {audio_path}...")
     segments, _ = model.transcribe(
-        str(audio_path), language=cfg.language, beam_size=cfg.beam_size
+        str(audio_path), language=cfg.input_language, beam_size=cfg.beam_size
     )
 
     transcript_data = []

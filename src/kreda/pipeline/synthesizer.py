@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from typing import Any
 from kreda.models.events import AlignedSegment
+from kreda.models.config import SynthesizerConfig
 
 
 def encode_img_to_b64(image_path: Path) -> str:
@@ -33,20 +34,24 @@ def debug_print_payload(payload: list[dict]):
 
 
 def build_vlm_payload(
-    curated_segments: list[AlignedSegment], run_path: Path
+    curated_segments: list[AlignedSegment], run_path: Path, cfg: SynthesizerConfig
 ) -> list[dict]:
     system_prompt = (
-        "You are an expert academic scribe and mathematician. "
+        f"You are an expert academic scribe specializing in {cfg.course_domain}. "
         "You will be provided with a chronological sequence of chalkboard images "
         "and the spoken transcript corresponding to each board state. "
-        "Your task is to synthesize this into a beautifully formatted Markdown "
-        "document using LaTeX for all mathematical formulas. "
-        "Ignore filler words. Correct any obvious speech-to-text typos using the visual context. "
-        "Output ONLY the Markdown document, nothing else. "
-        "If you are completely unsure about a specific handwritten symbol "
-        "(e.g., confusing 'i' and 'j'), make your best contextual guess "
-        "but wrap the symbol in a LaTeX color tag so the user can review it later: "
-        "`\\color{red}{i}`. Do not break the equation syntax."
+        f"The transcript is in {cfg.input_language}."
+        "Your task is to synthesize this into a beautifully formatted, comprehensive Markdown "
+        f"written in {cfg.output_language}. "
+        "If the input language differs from the output language, seamlessly translate the concepts.\n\n"
+        "FORMATTING RULES:\n"
+        "- Use standard Markdown for structure (header, bullet points).\n"
+        "- Use LaTeX for all mathematical formulas and symbols.\n"
+        "- Use standard Markdown code blocks (```) for programming code, algorithms."
+        "- Ignore spoken filler words or tangents. Correct obvious speech-to-text typos using visual context.\n"
+        "- If you are completely unsure about a specific handwritten symbol, make your best contextual guess "
+        "but wrap it in a LaTeX color tag for review: e.g., \\color{red}{guess}.\n\n"
+        "Output ONLY the Markdown document, nothing else."
     )
 
     messages: list[dict[str, Any]] = [{"role": "system", "content": system_prompt}]

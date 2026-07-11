@@ -38,6 +38,24 @@ def process(
         "-na",
         help="Run in vision-only mode. Skisp Whisper transcription.",
     ),
+    input_language: str = typer.Option(
+        "en",
+        "--input-lang",
+        "-il",
+        help="Two-letter source language code (e.g. 'en', 'pl')",
+    ),
+    output_language: str = typer.Option(
+        "en",
+        "--output-lang",
+        "-ol",
+        help="Target language for the final notes (e.g. 'en', 'pl')",
+    ),
+    course_domain: str = typer.Option(
+        "Computer Science and Mathematics",
+        "--course-domain",
+        "-cd",
+        help="The academic subject (helps the AI format code vs math correctly)",
+    ),
     whisper_model: str = typer.Option(
         "large-v3",
         "--whisper-model",
@@ -55,12 +73,6 @@ def process(
         "--whisper-compute",
         "-wc",
         help="Whisper quantization type (float16/int8/float32)",
-    ),
-    whisper_language: str = typer.Option(
-        "en",
-        "--lang",
-        "-wl",
-        help="Whisper two-letter language code (e.g. 'en', 'pl')",
     ),
     whisper_beam_size: int = typer.Option(
         5,
@@ -122,7 +134,7 @@ def process(
             model_size=whisper_model,
             device=whisper_device,
             compute_type=whisper_compute_type,
-            language=whisper_language,
+            input_language=input_language,
             beam_size=whisper_beam_size,
             lag_padding_ms=whisper_lag_padding_ms,
         )
@@ -148,6 +160,13 @@ def process(
     # step 3 (synthesizer)
 
     from kreda.pipeline.synthesizer import debug_print_payload, build_vlm_payload
+    from kreda.models.config import SynthesizerConfig
+
+    synthesizer_cfg = SynthesizerConfig(
+        input_language=input_language,
+        output_language=output_language,
+        course_domain=course_domain,
+    )
 
     payload = build_vlm_payload(curated_segments, run_path)
     debug_print_payload(payload)
