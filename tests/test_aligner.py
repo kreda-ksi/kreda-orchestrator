@@ -22,7 +22,7 @@ def test_sync_timestamps_syncing_boundaries():
         model_size="",
         device="",
         compute_type="",
-        language="",
+        input_language="",
         beam_size=0,
         lag_padding_ms=5000,
     )
