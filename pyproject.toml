@@ -18,3 +18,9 @@ dev = [
     "ruff",
     "pyright"
 ]
+
+[project.scripts]
+kreda = "kreda.main:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
