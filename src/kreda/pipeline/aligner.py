@@ -1,6 +1,6 @@
 import pandas as pd
 from pathlib import Path
-from typing import List, Dict, cast
+from typing import cast
 from faster_whisper import WhisperModel
 from kreda.models.config import WhisperConfig
 from kreda.models.events import AlignedSegment
@@ -33,7 +33,7 @@ def get_keyframes(csv_path: Path) -> pd.DataFrame:
     return cast(pd.DataFrame, events)
 
 
-def transcribe_audio(audio_path: Path, cfg: WhisperConfig) -> List[Dict]:
+def transcribe_audio(audio_path: Path, cfg: WhisperConfig) -> list[dict]:
     print(f"Loading Whisper {cfg.model_size} ({cfg.device}, {cfg.compute_type})")
 
     model = WhisperModel(
@@ -59,8 +59,8 @@ def transcribe_audio(audio_path: Path, cfg: WhisperConfig) -> List[Dict]:
 
 
 def sync_timestamps(
-    keyframes: pd.DataFrame, audio_segments: List[Dict], cfg: WhisperConfig
-) -> List[AlignedSegment]:
+    keyframes: pd.DataFrame, audio_segments: list[dict], cfg: WhisperConfig
+) -> list[AlignedSegment]:
     aligned_data = []
     last_time = 0
 
@@ -87,7 +87,7 @@ def sync_timestamps(
     return aligned_data
 
 
-def run(audio_path: Path, csv_path: Path, cfg: WhisperConfig) -> List[AlignedSegment]:
+def run(audio_path: Path, csv_path: Path, cfg: WhisperConfig) -> list[AlignedSegment]:
     keyframes = get_keyframes(csv_path)
     audio_segments = transcribe_audio(audio_path, cfg)
     aligned_segments = sync_timestamps(keyframes, audio_segments, cfg)
