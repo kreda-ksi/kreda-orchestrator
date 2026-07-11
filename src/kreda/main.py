@@ -98,6 +98,12 @@ def process(
         "-ao",
         help="Max board occlusion ratio (0.0->1.0) before applying masked diff logic",
     ),
+    prompt_chunk_size: int = typer.Option(
+        15,
+        "--prompt-chunk-size",
+        "-pc",
+        help="Number of board states to send per API call to prevent token overflow.",
+    ),
     debug: bool = typer.Option(
         False,
         "--debug",
@@ -168,10 +174,19 @@ def process(
         course_domain=course_domain,
     )
 
-    payload = build_vlm_payload(curated_segments, run_path, synthesizer_cfg)
+    chunks = [
+        curated_segments[i : i + prompt_chunk_size]
+        for i in range(0, len(curated_segments), prompt_chunk_size)
+    ]
 
     if debug:
-        debug_print_payload(payload)
+        typer.echo(f"Splitting lecture into {len(chunks)} chunks.")
+
+    for chunk in chunks:
+        payload = build_vlm_payload(chunk, run_path, synthesizer_cfg)
+
+        if debug:
+            debug_print_payload(payload)
 
     # finish logic
 

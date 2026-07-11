@@ -43,7 +43,10 @@ def debug_print_payload(payload: list[dict]):
 
 
 def build_vlm_payload(
-    curated_segments: list[AlignedSegment], run_path: Path, cfg: SynthesizerConfig
+    curated_segments: list[AlignedSegment],
+    run_path: Path,
+    cfg: SynthesizerConfig,
+    previous_notes: str = "",
 ) -> list[dict]:
 
     full_input_language = get_language_name(cfg.input_language)
@@ -65,8 +68,20 @@ def build_vlm_payload(
         "- Ignore spoken filler words or tangents. Correct obvious speech-to-text typos using visual context.\n"
         "- If you are completely unsure about a specific handwritten symbol, make your best contextual guess "
         "but wrap it in a LaTeX color tag for review: e.g., \\color{red}{guess}.\n\n"
-        "Output ONLY the Markdown document, nothing else."
     )
+
+    if previous_notes:
+        system_prompt += (
+            "\n\nIMPORTANT CONTEXT:\n"
+            "This is a continuation of a lecture. Here are the notes generated so far:\n"
+            "<previous_notes>\n"
+            f"{previous_notes}\n"
+            "</previous_notes>\n"
+            "Continue writing the notes seamlessly from where the previous notes ended. "
+            "Do NOT repeat the introduction, title, or previously covered topics. Start directly with the new material."
+        )
+    else:
+        system_prompt += "\n\nOutput ONLY the Markdown document, nothing else. Start with a logical main title (H1)."
 
     messages: list[dict[str, Any]] = [{"role": "system", "content": system_prompt}]
 
