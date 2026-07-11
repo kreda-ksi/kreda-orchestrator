@@ -29,7 +29,7 @@ def run(
     output_file: Path,
     synthesizer_cfg: SynthesizerConfig,
     generator_cfg: GeneratorConfig,
-) -> tuple[Path, str]:
+) -> str:
     accumulated_notes = ""
 
     chunks = [
@@ -59,4 +59,4 @@ def run(
         with open(run_path / output_file, "a") as f:
             f.write(chunk_markdown + "\n\n")
 
-    return output_path, accumulated_notes
+    return accumulated_notes
