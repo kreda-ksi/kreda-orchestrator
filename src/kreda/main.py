@@ -98,11 +98,36 @@ def process(
         "-ao",
         help="Max board occlusion ratio (0.0->1.0) before applying masked diff logic",
     ),
-    prompt_chunk_size: int = typer.Option(
+    vlm_model: str = typer.Option(
+        "gpt-4o",
+        "--vlm-model",
+        "-vm",
+        help="The Vision-Language Model to use.",
+    ),
+    vlm_api_key: str = typer.Option(
+        None,
+        "--vlm-key",
+        "-vk",
+        envvar="VLM_API_KEY",
+        help="VLM API key (defaults to VLM_API_KEY env variable)",
+    ),
+    vlm_base_url: str = typer.Option(
+        None,
+        "--vlm-base",
+        "-vb",
+        help="Custom API base URL (e.g., http://localhost:8000/v1 for vLLM)",
+    ),
+    vlm_chunk_size: int = typer.Option(
         15,
-        "--prompt-chunk-size",
-        "-pc",
+        "--vlm-chunk",
+        "-vc",
         help="Number of board states to send per API call to prevent token overflow.",
+    ),
+    vlm_output_file: Path = typer.Option(
+        "notes.md",
+        "--vlm-output",
+        "-vo",
+        help="VLM output file storing intermediate Markdown representation (relative to run path)",
     ),
     debug: bool = typer.Option(
         False,
@@ -163,10 +188,11 @@ def process(
         aligned_segments, run_path, grid_file, assembler_cfg
     )
 
-    # step 3 (synthesizer)
+    # step 3 (synthesizer+generator)
 
-    from kreda.pipeline.synthesizer import debug_print_payload, build_vlm_payload
+    from kreda.pipeline.generator import run as generator_run
     from kreda.models.config import SynthesizerConfig
+    from kreda.models.config import GeneratorConfig
 
     synthesizer_cfg = SynthesizerConfig(
         input_language=input_language,
@@ -174,23 +200,26 @@ def process(
         course_domain=course_domain,
     )
 
-    chunks = [
-        curated_segments[i : i + prompt_chunk_size]
-        for i in range(0, len(curated_segments), prompt_chunk_size)
-    ]
+    generator_cfg = GeneratorConfig(
+        model=vlm_model,
+        api_key=vlm_api_key,
+        base_url=vlm_base_url,
+        chunk_size=vlm_chunk_size,
+    )
 
-    if debug:
-        typer.echo(f"Splitting lecture into {len(chunks)} chunks.")
+    typer.echo(f"Sending payload to {vlm_model}...")
 
-    for chunk in chunks:
-        payload = build_vlm_payload(chunk, run_path, synthesizer_cfg)
-
-        if debug:
-            debug_print_payload(payload)
-
-    # finish logic
-
-    typer.secho("Process finished successfully.")
+    try:
+        generator_run(
+            curated_segments=curated_segments,
+            run_path=run_path,
+            output_file=vlm_output_file,
+            synthesizer_cfg=synthesizer_cfg,
+            generator_cfg=generator_cfg,
+        )
+    except Exception as e:
+        typer.secho(f"API error during generation: {e}", fg=typer.colors.RED)
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":
