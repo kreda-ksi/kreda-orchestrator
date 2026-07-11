@@ -4,3 +4,4 @@ src/kreda/__pycache__
 src/kreda/models/__pycache__
 src/kreda/pipeline/__pycache__
 tests/__pycache__
+src/kreda.egg-info
