@@ -1,17 +1,9 @@
 import pandas as pd
 from pathlib import Path
-from dataclasses import dataclass
 from typing import List, Dict, cast
 from faster_whisper import WhisperModel
 from kreda.models.config import WhisperConfig
-
-
-@dataclass
-class AlignedSegment:
-    timestamp_ms: int
-    event_type: str
-    filename: str
-    transcript_chunk: str
+from kreda.models.events import AlignedSegment
 
 
 def get_keyframes(csv_path: Path) -> pd.DataFrame:
