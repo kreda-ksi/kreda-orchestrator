@@ -168,8 +168,7 @@ def process(
         course_domain=course_domain,
     )
 
-    payload = build_vlm_payload(curated_segments, run_path)
-    debug_print_payload(payload)
+    payload = build_vlm_payload(curated_segments, run_path, synthesizer_cfg)
 
     # finish logic
 
