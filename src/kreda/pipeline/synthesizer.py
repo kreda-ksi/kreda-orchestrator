@@ -60,7 +60,7 @@ def build_vlm_payload(
         "FORMATTING RULES:\n"
         "- Use standard Markdown for structure (header, bullet points).\n"
         "- Use LaTeX for all mathematical formulas and symbols.\n"
-        "- Use standard Markdown code blocks (```) for programming code, algorithms."
+        "- Use standard Markdown code blocks (```) for programming code, algorithms.\n"
         "- Ignore spoken filler words or tangents. Correct obvious speech-to-text typos using visual context.\n"
         "- If you are completely unsure about a specific handwritten symbol, make your best contextual guess "
         "but wrap it in a LaTeX color tag for review: e.g., \\color{red}{guess}.\n\n"
@@ -90,11 +90,12 @@ def build_vlm_payload(
             }
         )
 
-        # add audio context
+        # add audio context and positional hint
+        hint_text = f" {segment.spatial_hint}" if segment.spatial_hint else ""
         user_content.append(
             {
                 "type": "text",
-                "text": f"[Board State {idx + 1}] Spoken transcript: {segment.transcript_chunk}",
+                "text": f"[Board State {idx + 1}]{hint_text} Spoken transcript: {segment.transcript_chunk}",
             }
         )
 

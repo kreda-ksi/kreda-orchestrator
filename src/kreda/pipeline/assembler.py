@@ -21,6 +21,31 @@ def load_grid(grid_path: Path) -> tuple[dict, dict]:
     return header, normalized_frames
 
 
+def get_activity_zones(grid: list[list[int]], grid_dimensions: list[int]) -> str:
+    if not grid:
+        return ""
+
+    cols, rows = grid_dimensions[0], grid_dimensions[1]
+    mid_col, mid_row = cols // 2, rows // 2
+
+    active_zones = []
+
+    if any(grid[r][c] > 0 for r in range(mid_row) for c in range(mid_col)):
+        active_zones.append("top-left")
+    if any(grid[r][c] > 0 for r in range(mid_row) for c in range(mid_col, cols)):
+        active_zones.append("top-right")
+    if any(grid[r][c] > 0 for r in range(mid_row, rows) for c in range(mid_col)):
+        active_zones.append("bottom-left")
+    if any(grid[r][c] > 0 for r in range(mid_row, rows) for c in range(mid_col, cols)):
+        active_zones.append("bottom-right")
+
+    if len(active_zones) == 0 or len(active_zones) == 4:
+        return ""
+
+    zones_str = ", ".join(active_zones)
+    return f"(Note: recent writing detected in {zones_str}.)"
+
+
 def has_new_bg_content(
     curr_img_path: Path,
     prev_img_path: Path,
@@ -72,11 +97,27 @@ def run(
     last_kept_image_path: Optional[Path] = None
 
     for segment in aligned_segments:
+
+        def keep_segment(
+            seg: AlignedSegment, hint_grid: list[list[int]], event_type: str
+        ):
+            if event_type == "SAVE_slide":
+                seg.spatial_hint = "(Note: The chalkboard was slid/shifted. The board layout has changed.)"
+            elif event_type == "SAVE_final":
+                seg.spatial_hint = (
+                    "(Note: This is the final board state of the lecture.)"
+                )
+            else:
+                seg.spatial_hint = get_activity_zones(hint_grid, grid_dimensions)
+
+            curated_segments.append(seg)
+
         frame = frames.get(segment.filename)
         if not frame:
             curated_segments.append(segment)
             continue
 
+        event_type = frame.get("event_type", segment.event_type)
         grid = frame.get("occupancy_grid")
         img_path = run_path / segment.filename
 
@@ -88,7 +129,7 @@ def run(
             segment.event_type == "SAVE_final"
             or occlusion_ratio < cfg.max_occlusion_ratio
         ):
-            curated_segments.append(segment)
+            keep_segment(segment, grid, event_type)
             last_kept_image_path = img_path
             continue
 
@@ -100,7 +141,7 @@ def run(
                 grid_dimensions,
                 cfg.diff_threshold_pixels,
             ):
-                curated_segments.append(segment)
+                keep_segment(segment, grid, event_type)
                 last_kept_image_path = img_path
             else:
                 print(f"Dropped {segment.filename}.")
@@ -110,7 +151,7 @@ def run(
                         " " + segment.transcript_chunk
                     )
         else:  # first image in sequence
-            curated_segments.append(segment)
+            keep_segment(segment, grid, event_type)
             last_kept_image_path = img_path
 
     return curated_segments
