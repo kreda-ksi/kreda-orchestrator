@@ -51,9 +51,10 @@ def build_vlm_payload(
 
     system_prompt = (
         f"You are an expert academic scribe specializing in {cfg.course_domain}. "
-        "You will be provided with a chronological sequence of chalkboard images "
-        "and the spoken transcript corresponding to each board state. "
-        f"The transcript is in {full_input_language}."
+        "You will be provided with a chronological sequence of chalkboard images. "
+        "Each image is followed by a `<board_state>` XML block containing the "
+        f"`<transcript>` (in {full_input_language}) spoken while that board was visible, "
+        f"and occasionally a `<spatial_context>` tag with visual hints.\n\n"
         "Your task is to synthesize this into a beautifully formatted, comprehensive Markdown "
         f"written in {full_output_language}. "
         "If the input language differs from the output language, seamlessly translate the concepts.\n\n"
@@ -91,11 +92,21 @@ def build_vlm_payload(
         )
 
         # add audio context and positional hint
-        hint_text = f" {segment.spatial_hint}" if segment.spatial_hint else ""
+        hint_xml = (
+            f" <spatial_context>{segment.spatial_hint}</spatial_context>"
+            if segment.spatial_hint
+            else ""
+        )
+        text_payload = (
+            f'<board_state index="{idx + 1}">\n'
+            f"{hint_xml}"
+            f"    <transcript>{segment.transcript_chunk}</transcript>\n"
+            f"</board_state>"
+        )
         user_content.append(
             {
                 "type": "text",
-                "text": f"[Board State {idx + 1}]{hint_text} Spoken transcript: {segment.transcript_chunk}",
+                "text": text_payload,
             }
         )
 
