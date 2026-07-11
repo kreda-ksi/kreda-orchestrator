@@ -9,3 +9,9 @@ class WhisperConfig:
     language: str
     beam_size: int
     lag_padding_ms: int
+
+
+@dataclass(frozen=True)
+class AssemblerConfig:
+    diff_threshold_pixels: int
+    max_occlusion_ratio: float

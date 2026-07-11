@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from pathlib import Path
 from typing import Optional
+from kreda.models.config import AssemblerConfig
 from kreda.models.events import AlignedSegment
 
 
@@ -25,7 +26,7 @@ def has_new_bg_content(
     prev_img_path: Path,
     occupancy_grid: list[list[int]],
     grid_dimensions: list[int],
-    diff_threshold_pixels: int = 500,
+    diff_threshold_pixels: int,
 ) -> bool:
     curr_img = cv2.imread(str(curr_img_path), cv2.IMREAD_GRAYSCALE)
     prev_img = cv2.imread(str(prev_img_path), cv2.IMREAD_GRAYSCALE)
@@ -59,7 +60,10 @@ def has_new_bg_content(
 
 
 def run(
-    aligned_segments: list[AlignedSegment], run_path: Path, grid_file: Path
+    aligned_segments: list[AlignedSegment],
+    run_path: Path,
+    grid_file: Path,
+    cfg: AssemblerConfig,
 ) -> list[AlignedSegment]:
     header, frames = load_grid(run_path / grid_file)
     grid_dimensions = header.get("grid_dimensions", [12, 6])
@@ -80,14 +84,21 @@ def run(
         occluded_cells = sum(1 for row in grid for cell in row if cell > 0)
         occlusion_ratio = occluded_cells / total_cells
 
-        if segment.event_type == "SAVE_final" or occlusion_ratio < 0.10:
+        if (
+            segment.event_type == "SAVE_final"
+            or occlusion_ratio < cfg.max_occlusion_ratio
+        ):
             curated_segments.append(segment)
             last_kept_image_path = img_path
             continue
 
         if last_kept_image_path is not None:
             if has_new_bg_content(
-                img_path, last_kept_image_path, grid, grid_dimensions
+                img_path,
+                last_kept_image_path,
+                grid,
+                grid_dimensions,
+                cfg.diff_threshold_pixels,
             ):
                 curated_segments.append(segment)
                 last_kept_image_path = img_path

@@ -1,6 +1,5 @@
 import typer
 from pathlib import Path
-from kreda.models.config import WhisperConfig
 
 app = typer.Typer(
     name="kreda-orchestrator",
@@ -75,6 +74,18 @@ def process(
         "-wp",
         help="Whisper audio window padding per event frame (in ms)",
     ),
+    assembler_diff_threshold_pixels: int = typer.Option(
+        500,
+        "--assembler-threshold",
+        "-at",
+        help="Number of changed pixels required to keep a frame (handles camera noise)",
+    ),
+    assembler_max_occlusion_ratio: float = typer.Option(
+        0.10,
+        "--assembler-occlusion",
+        "-ao",
+        help="Max board occlusion ratio (0.0->1.0) before applying masked diff logic",
+    ),
     debug: bool = typer.Option(
         False,
         "--debug",
@@ -87,6 +98,8 @@ def process(
         typer.echo(f"Target run: {run_path}")
         if no_audio:
             typer.echo("Audio disabled.")
+
+    # step 1 (aligner)
 
     if no_audio:
         from kreda.pipeline.aligner import get_keyframes, AlignedSegment
@@ -103,6 +116,7 @@ def process(
         ]
     else:
         from kreda.pipeline.aligner import run as aligner_run
+        from kreda.models.config import WhisperConfig
 
         whisper_cfg = WhisperConfig(
             model_size=whisper_model,
@@ -117,9 +131,21 @@ def process(
             run_path / audio_file, run_path / log_file, whisper_cfg
         )
 
-    from kreda.pipeline.assembler import run as assembler_run
+    # step 2 (assembler)
 
-    curated_segments = assembler_run(aligned_segments, run_path, grid_file)
+    from kreda.pipeline.assembler import run as assembler_run
+    from kreda.models.config import AssemblerConfig
+
+    assembler_cfg = AssemblerConfig(
+        diff_threshold_pixels=assembler_diff_threshold_pixels,
+        max_occlusion_ratio=assembler_max_occlusion_ratio,
+    )
+
+    curated_segments = assembler_run(
+        aligned_segments, run_path, grid_file, assembler_cfg
+    )
+
+    # finish logic
 
     for line in curated_segments:
         typer.echo(line.transcript_chunk)

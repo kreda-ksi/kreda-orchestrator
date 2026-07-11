@@ -17,12 +17,12 @@ def test_asmked_bg_differencing(tmp_path):
     cv2.imwrite(str(p1), img1)
     cv2.imwrite(str(p2), img2)
 
-    has_diff = has_new_bg_content(p2, p1, grid, [12, 6], diff_threshold_pixels=0)
+    has_diff = has_new_bg_content(p2, p1, grid, [12, 6], 0)
     assert has_diff is False
 
     img2[5, 5] = 0
     img2[25, 25] = 255
     cv2.imwrite(str(p2), img2)
 
-    has_diff = has_new_bg_content(p2, p1, grid, [12, 6], diff_threshold_pixels=0)
+    has_diff = has_new_bg_content(p2, p1, grid, [12, 6], 0)
     assert has_diff is True
