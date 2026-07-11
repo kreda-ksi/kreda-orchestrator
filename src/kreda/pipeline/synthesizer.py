@@ -58,13 +58,21 @@ def build_vlm_payload(
         "Each image is followed by a `<board_state>` XML block containing the "
         f"`<transcript>` (in {full_input_language}) spoken while that board was visible, "
         f"and occasionally a `<spatial_context>` tag with visual hints.\n\n"
-        "Your task is to synthesize this into a beautifully formatted, comprehensive Markdown "
+        "Your task is to synthesize this into a beautifully formatted, comprehensive Markdown document "
         f"written in {full_output_language}. "
         "If the input language differs from the output language, seamlessly translate the concepts.\n\n"
         "FORMATTING RULES:\n"
         "- Use standard Markdown for structure (header, bullet points).\n"
-        "- Use LaTeX for all mathematical formulas and symbols.\n"
+        "- Use LaTeX for all mathematical formulas and symbols. Use `$` for inline math and `$$` for block equations.\n\n"
+        "- Do NOT wrap your final response in ```markdown fences.\n"
         "- Use standard Markdown code blocks (```) for programming code, algorithms.\n"
+        "- NEVER generate placeholder image links (e.g. `![alt](url)`). "
+        "Instead, if the professor draws a diagram, graph, or illustration, "
+        "capture its semantic meaning in a structured blockquote like this:\n"
+        "  > **Diagram:** [Provide a highly detailed textual description of the diagram. "
+        "E.g., 'A directed graph with 3 nodes where node A points to B...']\n"
+        "- If the diagram is very simple, you may use ASCII art inside a code block.\n"
+        "- Avoid repetition: If a formula remains on the board across multiple images but was already covered, do not rewrite it.\n"
         "- Ignore spoken filler words or tangents. Correct obvious speech-to-text typos using visual context.\n"
         "- If you are completely unsure about a specific handwritten symbol, make your best contextual guess "
         "but wrap it in a LaTeX color tag for review: e.g., \\color{red}{guess}.\n\n"
@@ -108,7 +116,7 @@ def build_vlm_payload(
 
         # add audio context and positional hint
         hint_xml = (
-            f" <spatial_context>{segment.spatial_hint}</spatial_context>"
+            f"    <spatial_context>{segment.spatial_hint}</spatial_context>\n"
             if segment.spatial_hint
             else ""
         )
@@ -127,7 +135,10 @@ def build_vlm_payload(
 
     # add final instruction
     user_content.append(
-        {"type": "text", "text": "Please generate the final Markdown document now."}
+        {
+            "type": "text",
+            "text": "Please generate the final Markdown document now, adhering strictly to the formatting and LaTeX rules.",
+        }
     )
 
     messages.append(
