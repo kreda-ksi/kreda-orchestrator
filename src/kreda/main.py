@@ -178,6 +178,7 @@ def process(
                 event_type=str(row["changed_or_what"]),
                 filename=str(row["filename"]),
                 transcript_chunk="",
+                track_id=int(row["track"]),
             )
             for row in keyframes.to_dict("records")
         ]

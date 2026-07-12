@@ -8,4 +8,5 @@ class AlignedSegment:
     event_type: str
     filename: str
     transcript_chunk: str
+    track_id: int
     spatial_hint: Optional[str] = None

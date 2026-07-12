@@ -93,6 +93,7 @@ def sync_timestamps(
                 event_type=str(row["changed_or_what"]),
                 filename=str(row["filename"]),
                 transcript_chunk=" ".join(chunk_text),
+                track_id=int(row["track"]),
             )
         )
 
