@@ -45,11 +45,17 @@ def run(
     for idx, chunk in enumerate(chunks):
         typer.echo(f"Processing chunk {idx + 1}/{len(chunks)}...")
 
+        recent_context = ""
+        if len(accumulated_notes) > generator_cfg.context_length:
+            recent_context = f"...[Previous content truncated]...\n{accumulated_notes[-generator_cfg.context_length :]}"
+        elif accumulated_notes:
+            recent_context = accumulated_notes
+
         payload = build_vlm_payload(
             curated_segments=chunk,
             run_path=run_path,
             cfg=synthesizer_cfg,
-            previous_notes=accumulated_notes,
+            previous_notes=recent_context,
         )
 
         chunk_markdown = _call_llm(payload, generator_cfg)

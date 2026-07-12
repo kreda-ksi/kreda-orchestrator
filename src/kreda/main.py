@@ -129,6 +129,12 @@ def process(
         "-vo",
         help="VLM output file storing intermediate Markdown representation (relative to run path)",
     ),
+    vlm_context_length: int = typer.Option(
+        1500,
+        "--vlm-context-length",
+        "-vl",
+        help="VLM maximum context (<previous_notes> chunk) length.",
+    ),
     typst_model: str = typer.Option(
         "gpt-4o",
         "--typst-model",
@@ -230,6 +236,7 @@ def process(
         api_key=vlm_api_key,
         base_url=vlm_base_url,
         chunk_size=vlm_chunk_size,
+        context_length=vlm_context_length,
     )
 
     typer.echo(f"Sending payload to {vlm_model}...")

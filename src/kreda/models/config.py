@@ -30,10 +30,3 @@ class GeneratorConfig:
     api_key: str | None
     base_url: str | None
     chunk_size: int
-
-
-@dataclass(frozen=True)
-class TypstConfig:
-    model: str
-    api_key: str | None
-    base_url: str | None
