@@ -4,6 +4,7 @@ from typing import cast
 from faster_whisper import WhisperModel
 from kreda.models.config import WhisperConfig
 from kreda.models.events import AlignedSegment
+from tqdm import tqdm
 
 
 def get_keyframes(csv_path: Path) -> pd.DataFrame:
@@ -41,19 +42,32 @@ def transcribe_audio(audio_path: Path, cfg: WhisperConfig) -> list[dict]:
     )
 
     print(f"Transcribing {audio_path}...")
-    segments, _ = model.transcribe(
+    segments, info = model.transcribe(
         str(audio_path), language=cfg.input_language, beam_size=cfg.beam_size
     )
 
     transcript_data = []
-    for segment in segments:
-        transcript_data.append(
-            {
-                "start_ms": int(segment.start * 1000),
-                "end_ms": int(segment.end * 1000),
-                "text": segment.text.strip(),
-            }
-        )
+
+    with tqdm(
+        total=round(info.duration),
+        unit="s",
+        desc="Transcribing audio",
+        bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}s [{elapsed}<{remaining}]",
+    ) as pbar:
+        previous_end = 0
+
+        for segment in segments:
+            transcript_data.append(
+                {
+                    "start_ms": int(segment.start * 1000),
+                    "end_ms": int(segment.end * 1000),
+                    "text": segment.text.strip(),
+                }
+            )
+
+            progress = segment.end - previous_end
+            pbar.update(progress)
+            previous_end = segment.end
 
     return transcript_data
 
