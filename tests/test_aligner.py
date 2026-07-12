@@ -6,8 +6,18 @@ from kreda.models.config import WhisperConfig
 def test_sync_timestamps_syncing_boundaries():
     keyframes = pd.DataFrame(
         [
-            {"t_ms": 10000, "changed_or_what": "SAVE_slide", "filename": "slide1.png"},
-            {"t_ms": 20000, "changed_or_what": "SAVE_slide", "filename": "slide2.png"},
+            {
+                "t_ms": 10000,
+                "track": 0,
+                "changed_or_what": "SAVE_slide",
+                "filename": "slide1.png",
+            },
+            {
+                "t_ms": 20000,
+                "track": 0,
+                "changed_or_what": "SAVE_slide",
+                "filename": "slide2.png",
+            },
         ]
     )
 
