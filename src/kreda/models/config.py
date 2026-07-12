@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 
 
 @dataclass(frozen=True)
@@ -17,11 +18,18 @@ class AssemblerConfig:
     max_occlusion_ratio: float
 
 
+class SessionPreset(str, Enum):
+    lecture = "lecture"
+    exercises = "exercises"
+    seminar = "seminar"
+
+
 @dataclass(frozen=True)
 class SynthesizerConfig:
     input_language: str
     output_language: str
     course_domain: str
+    preset: SessionPreset
 
 
 @dataclass(frozen=True)

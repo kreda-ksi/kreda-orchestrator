@@ -52,8 +52,33 @@ def build_vlm_payload(
     full_input_language = get_language_name(cfg.input_language)
     full_output_language = get_language_name(cfg.output_language)
 
+    preset_instructions = {
+        "lecture": (
+            "SESSION TYPE: LECTURE. "
+            "This is a standard, linear academic lecture. Focus on building a cohesive, chronological narrative. "
+            "Structure the document like a formal textbook chapter, flowing logically from definitions to theorems to proofs."
+        ),
+        "exercises": (
+            "SESSION TYPE: RECAP / EXERCISES. "
+            "This is a problem-solving session. The content will jump between unrelated problems, student questions, and distinct exercises. "
+            "Do NOT try to force a continuous narrative between unrelated topics. "
+            "Structure the document as a 'Solved Problems' guide. Use headers like 'Exercise: [Topic]', followed by 'Solution' or 'Proof'."
+        ),
+        "seminar": (
+            "SESSION TYPE: SEMINAR. "
+            "This is an advanced seminar. The focus is on analyzing specific papers, exploratory theories, or deep-diving into a niche topic. "
+            "Structure the document around key arguments, methodologies, and findings. "
+            "Capture the progression of the core thesis being discussed. "
+        ),
+    }
+
+    session_instruction = preset_instructions.get(
+        cfg.preset, preset_instructions["lecture"]
+    )
+
     system_prompt = (
         f"You are an expert academic scribe specializing in {cfg.course_domain}. "
+        f"{session_instruction}\n\n"
         "You will be provided with a chronological sequence of chalkboard images. "
         "Each image is followed by a `<board_state>` XML block containing the "
         f"`<transcript>` (in {full_input_language}) spoken while that board was visible, "
@@ -62,7 +87,7 @@ def build_vlm_payload(
         f"written in {full_output_language}. "
         "If the input language differs from the output language, seamlessly translate the concepts.\n\n"
         "FORMATTING RULES:\n"
-        "- You are processing this lecture in segments. "
+        f"- You are processing this {cfg.preset} in segments. "
         "If the current chalkboard images show the exact same content that was already covered in the `<previous_notes>`, "
         "DO NOT rewrite the math, re-prove the theorem, or generate a new summary. "
         "Simply advance the text forward or output nothing if there is no new information.\n"
@@ -83,9 +108,8 @@ def build_vlm_payload(
         '- Use `<grid rows="X" cols="Y"> [describe the contents of the matrix/grid row by row] </grid>`for matrices and tables.\n'
         "- Avoid repetition: If a formula remains on the board across multiple images but was already covered, do not rewrite it.\n"
         "- STRIP ALL CONVERSATIONAL METALANGUAGE: Do not include rhetorical questions, audience check-ins (e.g., 'Is that clear?', 'Any questions?'), or lecturer sign-offs (e.g., 'That concludes our discussion', 'Thank you').\n"
-        "- NO PHYSICAL REFERENCES: The final readers will NOT see the images. NEVER mention the physical chalkboard, chalk colors, or spatial layout (e.g., do not say 'on the left board' or 'z tablicy po lewej'). "
-        "State the mathematical definitions and functions directly as if writing a standalone textbook.\n"
-        "- The final output MUST read like a formal, polished academic textbook, not a live transcript.\n"
+        "- NO PHYSICAL REFERENCES: The final readers will NOT see the images. NEVER mention the physical chalkboard, chalk colors, or spatial layout (e.g., do not say 'on the left board'). "
+        "State the definitions and functions directly as if writing a standalone text.\n"
         "- If you are completely unsure about a specific handwritten symbol, make your best contextual guess "
         "but wrap it in a LaTeX color tag for review: e.g., \\color{red}{guess}.\n\n"
     )
@@ -93,7 +117,7 @@ def build_vlm_payload(
     if previous_notes:
         system_prompt += (
             "\n\nIMPORTANT CONTEXT:\n"
-            "This is a continuation of a lecture. Here are the notes generated so far:\n"
+            f"This is a continuation of a {cfg.preset} class. Here are the notes generated so far:\n"
             "<previous_notes>\n"
             f"{previous_notes}\n"
             "</previous_notes>\n"

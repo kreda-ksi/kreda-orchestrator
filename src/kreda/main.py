@@ -1,5 +1,6 @@
 import typer
 from pathlib import Path
+from kreda.models.config import SessionPreset
 
 app = typer.Typer(
     name="kreda-orchestrator",
@@ -55,6 +56,12 @@ def process(
         "--course-domain",
         "-cd",
         help="The academic subject (helps the AI format code vs math correctly)",
+    ),
+    preset: SessionPreset = typer.Option(
+        SessionPreset.lecture,
+        "--preset",
+        "-p",
+        help="The structural preset for the VLM generation.",
     ),
     whisper_model: str = typer.Option(
         "large-v3",
@@ -216,6 +223,7 @@ def process(
         input_language=input_language,
         output_language=output_language,
         course_domain=course_domain,
+        preset=preset,
     )
 
     generator_cfg = GeneratorConfig(
