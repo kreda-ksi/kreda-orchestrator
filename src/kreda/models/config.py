@@ -30,3 +30,4 @@ class GeneratorConfig:
     api_key: str | None
     base_url: str | None
     chunk_size: int
+    context_length: int

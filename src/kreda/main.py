@@ -140,23 +140,10 @@ def process(
         "--typst-model",
         help="The LLM to use for the Markdown-to-Typst text conversion step.",
     ),
-    typst_api_key: str = typer.Option(
-        None,
-        "--typst-key",
-        "-tk",
-        envvar="TYPST_API_KEY",
-        help="Typst LLM API key (defaults to TYPST_API_KEY env variable)",
-    ),
-    typst_base_url: str = typer.Option(
-        None,
-        "--typst-base",
-        "-tb",
-        help="Custom API base URL for Typst generation (e.g., http://localhost:8000/v1 for vLLM)",
-    ),
-    typst_file: Path = typer.Option(
+    typst_output_file: Path = typer.Option(
         "source.typ",
-        "--typst-file",
-        "-tf",
+        "--typst-output",
+        "-to",
         help="Typst output file path (relative to run path)",
     ),
     debug: bool = typer.Option(
@@ -253,17 +240,8 @@ def process(
         # step 4 (typst generation)
 
         from kreda.pipeline.typst import run as typst_run
-        from kreda.models.config import TypstConfig
 
-        typst_cfg = TypstConfig(
-            model=typst_model,
-            api_key=typst_api_key,
-            base_url=typst_base_url,
-        )
-
-        typer.echo(f"Generating typst note with {typst_model}...")
-
-        typst_run(run_path / typst_file, markdown_text, typst_cfg)
+        typst_run(markdown_text, run_path / typst_output_file)
 
     except Exception as e:
         typer.secho(f"API error during generation: {e}", fg=typer.colors.RED)
