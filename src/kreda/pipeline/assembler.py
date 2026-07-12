@@ -56,7 +56,7 @@ def has_new_bg_content(
     curr_img = cv2.imread(str(curr_img_path), cv2.IMREAD_GRAYSCALE)
     prev_img = cv2.imread(str(prev_img_path), cv2.IMREAD_GRAYSCALE)
 
-    if curr_img is None or prev_img is None:
+    if curr_img is None or prev_img is None or curr_img.shape != prev_img.shape:
         return True
 
     img_h, img_w = curr_img.shape
@@ -95,6 +95,7 @@ def run(
 
     curated_segments = []
     last_kept_image_path: Optional[Path] = None
+    last_kept_per_track = {}
 
     for segment in aligned_segments:
 
@@ -120,17 +121,22 @@ def run(
         event_type = frame.get("event_type", segment.event_type)
         grid = frame.get("occupancy_grid")
         img_path = run_path / segment.filename
+        track_id = segment.track_id
+
+        last_kept_image_path = last_kept_per_track.get(track_id)
 
         total_cells = grid_dimensions[0] * grid_dimensions[1]
         occluded_cells = sum(1 for row in grid for cell in row if cell > 0)
         occlusion_ratio = occluded_cells / total_cells
 
-        if (
-            segment.event_type == "SAVE_final"
-            or occlusion_ratio < cfg.max_occlusion_ratio
-        ):
+        if segment.event_type == "SAVE_final":
             keep_segment(segment, grid, event_type)
-            last_kept_image_path = img_path
+            last_kept_per_track[track_id] = img_path
+            continue
+
+        if occlusion_ratio > cfg.max_occlusion_ratio:
+            if curated_segments:
+                curated_segments[-1].transcript_chunk += " " + segment.transcript_chunk
             continue
 
         if last_kept_image_path is not None:
@@ -142,7 +148,7 @@ def run(
                 cfg.diff_threshold_pixels,
             ):
                 keep_segment(segment, grid, event_type)
-                last_kept_image_path = img_path
+                last_kept_per_track[track_id] = img_path
             else:
                 print(f"Dropped {segment.filename}.")
                 # append dropped segment's transcript to previous to not lose audio
@@ -150,8 +156,8 @@ def run(
                     curated_segments[-1].transcript_chunk += (
                         " " + segment.transcript_chunk
                     )
-        else:  # first image in sequence
+        else:  # first image in sequence for this track
             keep_segment(segment, grid, event_type)
-            last_kept_image_path = img_path
+            last_kept_per_track[track_id] = img_path
 
     return curated_segments
