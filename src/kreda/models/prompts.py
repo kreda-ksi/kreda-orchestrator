@@ -62,6 +62,7 @@ def get_system_prompt(cfg: SynthesizerConfig, previous_notes: str = "") -> str:
         '- Use `<grid rows="X" cols="Y"> [describe the contents of the matrix/grid row by row] </grid>` for matrices and tables.\n'
         "- Avoid repetition: If a formula remains on the board across multiple images but was already covered, do not rewrite it.\n"
         "- STRIP ALL CONVERSATIONAL METALANGUAGE: Do not include rhetorical questions, audience check-ins (e.g., 'Is that clear?', 'Any questions?'), or lecturer sign-offs (e.g., 'That concludes our discussion', 'Thank you').\n"
+        "- NO META-COMMENTARY: Do not write sentences that describe the document itself (e.g., 'This section covers...'). Just output the mathematical content directly.\n"
         "- NO PHYSICAL REFERENCES: The final readers will NOT see the images. NEVER mention the physical chalkboard, chalk colors, or spatial layout (e.g., do not say 'on the left board'). "
         "State the definitions and functions directly as if writing a standalone text.\n"
         "- If you are completely unsure about a specific handwritten symbol, make your best contextual guess "
